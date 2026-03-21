@@ -30,15 +30,15 @@ jobs:
 workflows:
   build-and-package:
     jobs:
-      - build_atmega2560_firmware
+      - build_atmega2560_firmware:
           filters:
-              tags:
-                only: /^release-.*/
-              branches:
-                ignore: /.*/
-      - build_python
+            tags:
+              only: /^release-.*/
+            branches:
+              ignore: /.*/
+      - build_python:
           filters:
-              tags:
-                only: /^release-.*/
-              branches:
-                ignore: /.*/
+            tags:
+              only: /^release-.*/
+            branches:
+              ignore: /.*/
