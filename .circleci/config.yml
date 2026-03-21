@@ -8,7 +8,7 @@ jobs:
       - checkout
       - run:
           name: Set Build Version
-          command: python circleci_set_version.h
+          command: python circleci_set_version.py
   
   build_atmega2560_firmware:
     docker:
