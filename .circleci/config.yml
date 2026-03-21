@@ -1,6 +1,15 @@
 version: 2.1
 
 jobs:
+  prebuild_set_build_version:
+    docker:
+      - image: cimg/python:3.13
+    steps:
+      - checkout
+      - run:
+          name: Set Build Version
+          command: python circleci_set_version.h
+  
   build_atmega2560_firmware:
     docker:
       - image: jimmykzm94/avr-toolchain-amd64:15.2.0
@@ -30,13 +39,23 @@ jobs:
 workflows:
   build-and-package:
     jobs:
+      - prebuild_set_build_version:
+          filters:
+            tags:
+              only: /^release-.*/
+            branches:
+              ignore: /.*/
       - build_atmega2560_firmware:
+          requires:
+            - prebuild_set_build_version
           filters:
             tags:
               only: /^release-.*/
             branches:
               ignore: /.*/
       - build_python:
+          requires:
+            - prebuild_set_build_version
           filters:
             tags:
               only: /^release-.*/
