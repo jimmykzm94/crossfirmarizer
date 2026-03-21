@@ -10,8 +10,8 @@ jobs:
           name: Build ATmega Firmware
           command: make -f crossfirmarizer/crossfirmarizer_ATmega2560.mk all
       - store_artifacts:
-          path: .  # Adjust to your specific hex output folder if needed
-          destination: outputs/atmega2560
+          path: crossfirmarizer/build/crossfirmarizer_ATmega2560.hex
+          destination: .
 
   build_python:
     docker:
@@ -24,11 +24,21 @@ jobs:
             pip install build
             python -m build crossfirmarizer_client_python
       - store_artifacts:
-          path: dist
-          destination: outputs/python
+          path: crossfirmarizer_client_python/dist
+          destination: .
 
 workflows:
   build-and-package:
     jobs:
       - build_atmega2560_firmware
+        filters:
+            tags:
+              only: /^release-.*/
+            branches:
+              ignore: /.*/
       - build_python
+        filters:
+            tags:
+              only: /^release-.*/
+            branches:
+              ignore: /.*/
