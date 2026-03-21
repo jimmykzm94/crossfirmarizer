@@ -1,13 +1,18 @@
 import os
 import re
 import sys
+import subprocess
 
-# Fetch the built-in CircleCI build number
-build_num = os.environ.get('CIRCLE_BUILD_NUM')
+# Get build number based on commit count of release branch that is branching out from main
+branch_name = os.environ.get('CIRCLE_BRANCH')
+if not branch_name:
+    branch_name = "HEAD"  # Fallback for local testing
 
-if not build_num:
-    print("Not running in CircleCI or CIRCLE_BUILD_NUM is missing. Exiting.")
-    sys.exit(1)
+try:
+    build_num = subprocess.check_output(["git", "rev-list", "--count", branch_name, "^main"]).decode("utf-8").strip()
+except subprocess.CalledProcessError as e:
+    print(f"Warning: Failed to calculate commit count, defaulting to 0. Error: {e}")
+    build_num = "0"
 
 # --- CONFIGURATION ---
 # Update these paths to match your repository structure
