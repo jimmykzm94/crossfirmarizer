@@ -61,6 +61,19 @@ jobs:
       - store_artifacts:
           path: collected_artifacts
           destination: .
+      - run:
+          name: Publish Artifacts to GitHub Release
+          command: |
+            # Derives the tag name from the branch (e.g., release/v1.0.0 -> v1.0.0)
+            RELEASE_TAG="${CIRCLE_BRANCH#release/}"
+            
+            if gh release view "$RELEASE_TAG" > /dev/null 2>&1; then
+              echo "Release $RELEASE_TAG already exists. Uploading new artifacts..."
+              gh release upload "$RELEASE_TAG" collected_artifacts/* --clobber
+            else
+              echo "Creating new release $RELEASE_TAG and uploading artifacts..."
+              gh release create "$RELEASE_TAG" collected_artifacts/* --title "Release $RELEASE_TAG" --generate-notes
+            fi
 
 workflows:
   build-and-package:
