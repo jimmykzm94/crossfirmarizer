@@ -1,0 +1,16 @@
+[project]
+name = "crossfirmarizer"
+version = "0.1"
+description = "A Python interface for the CrossFirmarizer."
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "pyserial",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]

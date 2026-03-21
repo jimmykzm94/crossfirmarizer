@@ -1,0 +1,36 @@
+# General
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+.env
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+
+# STM32CubeIDE
+/crossfirmarizer/Debug/
+/crossfirmarizer/Release/
+/crossfirmarizer/build/
+/crossfirmarizer/*.elf
+/crossfirmarizer/*.map
+/crossfirmarizer/*.hex
+/crossfirmarizer/*.list
+/crossfirmarizer/.cproject
+/crossfirmarizer/.mxproject
+/crossfirmarizer/.project
+/crossfirmarizer/.settings/
+/crossfirmarizer/*.launch
