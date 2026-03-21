@@ -8,7 +8,7 @@ jobs:
       - checkout
       - run:
           name: Build ATmega Firmware
-          command: make all
+          command: make -f crossfirmarizer/crossfirmarizer_ATmega2560.mk all
       - store_artifacts:
           path: .  # Adjust to your specific hex output folder if needed
           destination: outputs/atmega2560
