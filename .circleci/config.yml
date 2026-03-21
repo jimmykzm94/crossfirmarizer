@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+  github-cli: circleci/github-cli@2.8.1
+
 jobs:
   prebuild_set_build_version:
     docker:
@@ -18,7 +21,6 @@ jobs:
     docker:
       - image: jimmykzm94/avr-toolchain-amd64:15.2.0
     steps:
-      - checkout
       - attach_workspace:
           at: .
       - run:
@@ -33,7 +35,6 @@ jobs:
     docker:
       - image: cimg/python:3.13
     steps:
-      - checkout
       - attach_workspace:
           at: .
       - run:
@@ -83,13 +84,6 @@ workflows:
           filters:
             branches:
               only: /^release\/.*/
-      - collect_artifacts:
-          requires:
-            - build_atmega2560_firmware
-            - build_python
-          filters:
-            branches:
-              only: /^release\/.*/
       - build_atmega2560_firmware:
           requires:
             - prebuild_set_build_version
@@ -99,6 +93,13 @@ workflows:
       - build_python:
           requires:
             - prebuild_set_build_version
+          filters:
+            branches:
+              only: /^release\/.*/
+      - collect_artifacts:
+          requires:
+            - build_atmega2560_firmware
+            - build_python
           filters:
             branches:
               only: /^release\/.*/
