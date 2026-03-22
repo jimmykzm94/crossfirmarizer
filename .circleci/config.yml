@@ -33,7 +33,7 @@ jobs:
 
   build_stm32_firmware:
     docker:
-      - image: jimmykzm94/arm-toolchain-amd64:15.2.0
+      - image: jimmykzm94/arm-gcc-toolchain-amd64:15.2.0
     steps:
       - attach_workspace:
           at: .
