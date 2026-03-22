@@ -29,7 +29,21 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
-            - crossfirmarizer/build/crossfirmarizer_ATmega2560.hex
+            - crossfirmarizer/build/crossfirmarizer_FW_ATmega2560_*.hex
+
+  build_stm32_firmware:
+    docker:
+      - image: jimmykzm94/arm-toolchain-amd64:15.2.0
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Build STM32 Firmware
+          command: make -f crossfirmarizer/crossfirmarizer_STM32F446xx.mk all
+      - persist_to_workspace:
+          root: .
+          paths:
+            - crossfirmarizer/build/crossfirmarizer_FW_STM32F446RE_*.hex
 
   build_python:
     docker:
@@ -57,7 +71,7 @@ jobs:
           name: Collect Artifacts
           command: |
             mkdir -p collected_artifacts
-            cp crossfirmarizer/build/crossfirmarizer_ATmega2560.hex collected_artifacts/
+            cp crossfirmarizer/build/crossfirmarizer_FW_*.hex collected_artifacts/
             cp -r crossfirmarizer_client_python/dist/* collected_artifacts/
       - store_artifacts:
           path: collected_artifacts
@@ -90,6 +104,12 @@ workflows:
           filters:
             branches:
               only: /^release\/.*/
+      - build_stm32_firmware:
+          requires:
+            - prebuild_set_build_version
+          filters:
+            branches:
+              only: /^release\/.*/
       - build_python:
           requires:
             - prebuild_set_build_version
@@ -99,6 +119,7 @@ workflows:
       - collect_artifacts:
           requires:
             - build_atmega2560_firmware
+            - build_stm32_firmware
             - build_python
           filters:
             branches:

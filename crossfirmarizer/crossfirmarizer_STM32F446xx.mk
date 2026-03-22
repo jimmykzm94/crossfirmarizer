@@ -19,7 +19,10 @@ SZ = $(PREFIX)size
 PROJ_DIR := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 
 CHIP = STM32F446RE
-PROJECT = crossfirmarizer_$(CHIP)
+VERSION_MAJOR := $(shell grep "VERSION_MAJOR" $(PROJ_DIR)/Core/Inc/version.h | awk '{print $$3}' | tr -d '\r"')
+VERSION_MINOR := $(shell grep "VERSION_MINOR" $(PROJ_DIR)/Core/Inc/version.h | awk '{print $$3}' | tr -d '\r"')
+VERSION_BUILD := $(shell grep "VERSION_BUILD" $(PROJ_DIR)/Core/Inc/version.h | awk '{print $$3}' | tr -d '\r"')
+PROJECT = crossfirmarizer_FW_$(CHIP)_v$(VERSION_MAJOR).$(VERSION_MINOR).$(VERSION_BUILD)
 
 #
 # Paths
@@ -29,7 +32,9 @@ CORE_DIR = $(PROJ_DIR)/Core
 DRIVERS_DIR = $(PROJ_DIR)/Drivers
 CMSIS_DIR = $(DRIVERS_DIR)/CMSIS
 
-TARGET = $(BUILD_DIR)/$(PROJECT).elf
+TARGET_ELF = $(BUILD_DIR)/$(PROJECT).elf
+TARGET_HEX = $(BUILD_DIR)/$(PROJECT).hex
+TARGET_LIST = $(BUILD_DIR)/$(PROJECT).list
 MAP = $(BUILD_DIR)/$(PROJECT).map
 
 #
@@ -50,19 +55,19 @@ C_INCLUDES += -I$(PROJ_DIR)/Core/Inc/$(CHIP)
 #
 # Compiler flags
 #
-MCU = -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard
+USER_DEFINES = -DTARGET_STM32F446RE -DULTRASONIC_SENSOR_ENABLED
+MCU = -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard 
 DEFS = -DSTM32F446xx
-CFLAGS = $(MCU) $(DEFS) $(C_INCLUDES) -std=gnu11 -Os -Wall --specs=nano.specs -ffunction-sections -fdata-sections
-CFLAGS += -Wextra -Wno-unused-variable
-ASMFLAGS = $(MCU) -x assembler-with-cpp
+CFLAGS = $(MCU) $(DEFS) $(USER_DEFINES) $(C_INCLUDES) -std=gnu11 -Os -Wall --specs=nano.specs -ffunction-sections -fdata-sections
+# CFLAGS += -Wextra -Wno-unused-variable
+ASMFLAGS = $(MCU) -x assembler-with-cpp --specs=nano.specs
 
 #
 # Linker flags
 #
-LDSCRIPT = STM32F446RETX_FLASH.ld
-LIBS = -lc -lm
+LDSCRIPT = $(PROJ_DIR)/STM32F446RETX_FLASH.ld
 LDFLAGS = $(MCU) -T$(LDSCRIPT) --specs=nosys.specs -Wl,-Map=$(MAP) -Wl,--gc-sections -static --specs=nano.specs
-LDFLAGS += -Wl,--start-group $(LIBS) -Wl,--end-group
+LDFLAGS += -Wl,--start-group -lc -lm -Wl,--end-group
 
 #
 # Object files
@@ -72,23 +77,33 @@ OBJS += $(addprefix $(BUILD_DIR)/,$(notdir $(ASM_SOURCES:.s=.o)))
 vpath %.c $(sort $(dir $(C_SOURCES)))
 vpath %.s $(sort $(dir $(ASM_SOURCES)))
 
-all: $(TARGET)
+all: $(TARGET_ELF) $(TARGET_HEX) $(TARGET_LIST)
 
 $(BUILD_DIR)/%.o: %.c
 	@mkdir -p $(BUILD_DIR)
-	$(CC) -c $(CFLAGS) -o $@ $<
+	@$(CC) -c $(CFLAGS) -o $@ $<
+	@echo "Building $*.c ..."
 
 $(BUILD_DIR)/%.o: %.s
 	@mkdir -p $(BUILD_DIR)
-	$(CC) -c $(ASMFLAGS) -o $@ $<
+	@$(CC) -c $(ASMFLAGS) -o $@ $<
+	@echo "Building $*.s ..."
 
-$(TARGET): $(OBJS)
-	$(CC) $(LDFLAGS) $(OBJS) -o $@
+$(TARGET_ELF): $(OBJS)
+	@$(CC) $(LDFLAGS) $(OBJS) -o $@
+	@echo "Building $(patsubst $(PROJ_DIR)/%,%,$@) ..."
+	$(SZ) $@
 	@echo " "
-	$(SZ) $(TARGET)
-	@echo " "
+
+$(TARGET_HEX): $(TARGET_ELF)
+	@$(CP) -O ihex $< $@
+	@echo "Building $(patsubst $(PROJ_DIR)/%,%,$@) ... done."
+
+$(TARGET_LIST): $(TARGET_ELF)
+	@$(OD) -h -S $< > $@
+	@echo "Building $(patsubst $(PROJ_DIR)/%,%,$@) ... done."
 
 clean:
-	rm -rf $(BUILD_DIR) $(TARGET) $(MAP)
+	rm -rf $(BUILD_DIR)
 
 .PHONY: all clean

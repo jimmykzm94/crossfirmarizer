@@ -15,7 +15,10 @@ SZ = $(PREFIX)size
 PROJ_DIR := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 
 CHIP = ATmega2560
-PROJECT = crossfirmarizer_$(CHIP)
+VERSION_MAJOR := $(shell grep "VERSION_MAJOR" $(PROJ_DIR)/Core/Inc/version.h | awk '{print $$3}' | tr -d '\r"')
+VERSION_MINOR := $(shell grep "VERSION_MINOR" $(PROJ_DIR)/Core/Inc/version.h | awk '{print $$3}' | tr -d '\r"')
+VERSION_BUILD := $(shell grep "VERSION_BUILD" $(PROJ_DIR)/Core/Inc/version.h | awk '{print $$3}' | tr -d '\r"')
+PROJECT = crossfirmarizer_FW_$(CHIP)_v$(VERSION_MAJOR).$(VERSION_MINOR).$(VERSION_BUILD)
 
 #
 # Paths

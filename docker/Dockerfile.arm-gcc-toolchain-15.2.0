@@ -1,0 +1,16 @@
+# Use the Alpine
+FROM alpine:3.23.3
+
+# Install the ARM GCC toolchain
+# Note: Alpine splits the package into gcc-arm-none-eabi and newlib-arm-none-eabi
+RUN apk add --no-cache \
+    gcc-arm-none-eabi \
+    binutils-arm-none-eabi \
+    newlib-arm-none-eabi \
+    make
+
+# Set the working directory for your firmware source
+WORKDIR /project
+
+# Default command
+CMD ["arm-none-eabi-gcc", "--version"]
