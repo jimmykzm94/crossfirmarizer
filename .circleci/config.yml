@@ -66,6 +66,8 @@ jobs:
   collect_artifacts:
     docker:
       - image: cimg/base:current
+    environment:
+      CIRCLE_PIPELINE_NUMBER: << pipeline.number >>
     steps:
       - attach_workspace:
           at: .
@@ -82,8 +84,8 @@ jobs:
       - run:
           name: Publish Artifacts to GitHub Release
           command: |
-            # Derives the tag name from the branch (e.g., release/v1.0.0 -> v1.0.0)
-            RELEASE_TAG="${CIRCLE_BRANCH#release/}"
+            # Derives the tag name from the branch and pipeline number (e.g., release/v1.0 -> v1.0.123)
+            RELEASE_TAG="${CIRCLE_BRANCH#release/}.${CIRCLE_PIPELINE_NUMBER}"
             
             if gh release view "$RELEASE_TAG" > /dev/null 2>&1; then
               echo "Release $RELEASE_TAG already exists. Uploading new artifacts..."
