@@ -47,7 +47,7 @@ Communication Flow:
 ## Installation
 
 ```bash
-pip install crossfirmarizer
+pip install crossfirmarizer-x.y.z-py3-none-any.whl
 ```
 
 ## Getting Started
@@ -136,12 +136,12 @@ make -f crossfirmarizer/crossfirmarizer_ATmega2560.mk upload PORT=/dev/your_port
 
 ### STM32F446RE Firmware
 
-<!-- **Using Makefile:**
+**Using Makefile:**
 1. Build: `make -f crossfirmarizer/crossfirmarizer_STM32F446xx.mk all`
 2. Flash with a tool like `st-flash`:
-   ```bash
-   st-flash write crossfirmarizer/build/crossfirmarizer_STM32F446RE.elf 0x8000000
-   ``` -->
+```bash
+st-flash --format hex write crossfirmarizer_STM32F446RE.hex
+```
 
 **Using STM32CubeIDE:**
 1. Create a new project from existing C code, pointing to the `crossfirmarizer` directory.
