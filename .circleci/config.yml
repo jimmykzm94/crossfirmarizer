@@ -1,0 +1,105 @@
+version: 2.1
+
+orbs:
+  github-cli: circleci/github-cli@2.7.2
+
+jobs:
+  prebuild_set_build_version:
+    docker:
+      - image: cimg/python:3.13
+    steps:
+      - checkout
+      - run:
+          name: Set Build Version
+          command: python circleci_set_version.py
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+  
+  build_atmega2560_firmware:
+    docker:
+      - image: jimmykzm94/avr-toolchain-amd64:15.2.0
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Build ATmega Firmware
+          command: make -f crossfirmarizer/crossfirmarizer_ATmega2560.mk all
+      - persist_to_workspace:
+          root: .
+          paths:
+            - crossfirmarizer/build/crossfirmarizer_ATmega2560.hex
+
+  build_python:
+    docker:
+      - image: cimg/python:3.13
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Build Python Package
+          command: |
+            pip install build
+            python -m build crossfirmarizer_client_python
+      - persist_to_workspace:
+          root: .
+          paths:
+            - crossfirmarizer_client_python/dist
+
+  collect_artifacts:
+    docker:
+      - image: cimg/base:current
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Collect Artifacts
+          command: |
+            mkdir -p collected_artifacts
+            cp crossfirmarizer/build/crossfirmarizer_ATmega2560.hex collected_artifacts/
+            cp -r crossfirmarizer_client_python/dist/* collected_artifacts/
+      - store_artifacts:
+          path: collected_artifacts
+          destination: .
+      - github-cli/setup
+      - run:
+          name: Publish Artifacts to GitHub Release
+          command: |
+            # Derives the tag name from the branch (e.g., release/v1.0.0 -> v1.0.0)
+            RELEASE_TAG="${CIRCLE_BRANCH#release/}"
+            
+            if gh release view "$RELEASE_TAG" > /dev/null 2>&1; then
+              echo "Release $RELEASE_TAG already exists. Uploading new artifacts..."
+              gh release upload "$RELEASE_TAG" collected_artifacts/* --clobber
+            else
+              echo "Creating new release $RELEASE_TAG and uploading artifacts..."
+              gh release create "$RELEASE_TAG" collected_artifacts/* --title "Release $RELEASE_TAG" --generate-notes
+            fi
+
+workflows:
+  build-and-package:
+    jobs:
+      - prebuild_set_build_version:
+          filters:
+            branches:
+              only: /^release\/.*/
+      - build_atmega2560_firmware:
+          requires:
+            - prebuild_set_build_version
+          filters:
+            branches:
+              only: /^release\/.*/
+      - build_python:
+          requires:
+            - prebuild_set_build_version
+          filters:
+            branches:
+              only: /^release\/.*/
+      - collect_artifacts:
+          requires:
+            - build_atmega2560_firmware
+            - build_python
+          filters:
+            branches:
+              only: /^release\/.*/

@@ -1,0 +1,16 @@
+# Use the Alpine
+FROM alpine:3.23.3
+
+# Install the AVR toolchain
+# Note: Alpine splits the package into gcc-avr and avr-libc
+RUN apk add --no-cache \
+    gcc-avr=15.2.0-r0 \
+    binutils-avr \
+    avr-libc \
+    make
+
+# Set the working directory for your firmware source
+WORKDIR /project
+
+# Default command
+CMD ["avr-gcc", "--version"]
