@@ -1,32 +1,41 @@
 import os
 import re
-import sys
-import subprocess
+import crossfirmarizer_version
 
-# Get build number based on commit count of release branch that is branching out from main
-branch_name = os.environ.get('CIRCLE_BRANCH')
-if not branch_name:
-    branch_name = "HEAD"  # Fallback for local testing
+# Get version from crossfirmarizer_version.py
+major_num = crossfirmarizer_version.VERSION_MAJOR
+minor_num = crossfirmarizer_version.VERSION_MINOR
 
-try:
-    build_num = subprocess.check_output(["git", "rev-list", "--count", branch_name, "^main"]).decode("utf-8").strip()
-except subprocess.CalledProcessError as e:
-    print(f"Warning: Failed to calculate commit count, defaulting to 0. Error: {e}")
+# Get build number based on pipeline number
+build_num = os.environ.get('CIRCLE_PIPELINE_NUMBER')
+if not build_num:
     build_num = "0"
 
 # --- CONFIGURATION ---
 # Update these paths to match your repository structure
-C_FILE_PATH = "crossfirmarizer/Core/Inc/version.h" 
+C_FILE_PATH = "crossfirmarizer/Core/Inc/version.h"
 TOML_FILE_PATH = "crossfirmarizer_client_python/pyproject.toml"
 
 # --- 1. UPDATE C HEADER ---
 with open(C_FILE_PATH, 'r') as f:
     c_data = f.read()
 
+# Replaces: #define VERSION_MAJOR <any_number>
+c_data = re.sub(
+    r'(#define\s+VERSION_MAJOR\s+)\d+',
+    rf'\g<1>{major_num}',
+    c_data
+)
+# Replaces: #define VERSION_MINOR <any_number>
+c_data = re.sub(
+    r'(#define\s+VERSION_MINOR\s+)\d+',
+    rf'\g<1>{minor_num}',
+    c_data
+)
 # Replaces: #define VERSION_BUILD <any_number>
 c_data = re.sub(
-    r'(#define\s+VERSION_BUILD\s+)\d+', 
-    rf'\g<1>{build_num}', 
+    r'(#define\s+VERSION_BUILD\s+)\d+',
+    rf'\g<1>{build_num}',
     c_data
 )
 
@@ -37,14 +46,14 @@ with open(C_FILE_PATH, 'w') as f:
 with open(TOML_FILE_PATH, 'r') as f:
     toml_data = f.read()
 
-# Replaces: version = "X.Y.<any_number>"
+# Replaces: version = "X.Y.Z"
 toml_data = re.sub(
-    r'(version\s*=\s*"\d+\.\d+\.)\d+(")', 
-    rf'\g<1>{build_num}\g<2>', 
+    r'(version\s*=\s*")\d+\.\d+\.\d+(")',
+    rf'\g<1>{major_num}.{minor_num}.{build_num}\g<2>',
     toml_data
 )
 
 with open(TOML_FILE_PATH, 'w') as f:
     f.write(toml_data)
-
-print(f"Successfully bumped build version to {build_num}.")
+    
+print(f"Successfully bumped version to {major_num}.{minor_num}.{build_num}.")
