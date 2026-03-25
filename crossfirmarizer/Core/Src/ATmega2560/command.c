@@ -12,7 +12,7 @@ size_t response_len;
 
 void command_hw_init(void)
 {
-    uart_init();
+    uart_init(115200);
 }
 void command_send(uint8_t cmd, const uint8_t *payload, size_t payload_len)
 {

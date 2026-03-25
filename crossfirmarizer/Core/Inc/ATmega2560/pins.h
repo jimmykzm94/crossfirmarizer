@@ -1,11 +1,8 @@
-#ifndef PINS_H
-#define PINS_H
-
-// TODO un-comment for non-stm32 or command build
-// #define TARGET_ATMEGA2560
+#pragma once
 
 #ifdef TARGET_ATMEGA2560
 
+#include "pin_mode.h"
 #include <avr/io.h>
 
 typedef enum
@@ -89,15 +86,7 @@ typedef enum
 
     // size
     PIN_MAX_COUNT
-} pin_t;
-
-typedef enum
-{
-    PIN_MODE_INPUT,
-    PIN_MODE_OUTPUT,
-    PIN_MODE_ANALOG,
-    PIN_MODE_MAX_COUNT
-} pin_mode_t;
+} pin_arduino_mega_t;
 
 typedef struct
 {
@@ -108,7 +97,5 @@ typedef struct
 } pin_map_t;
 
 extern const pin_map_t pins[PIN_MAX_COUNT];
-
-#endif
 
 #endif

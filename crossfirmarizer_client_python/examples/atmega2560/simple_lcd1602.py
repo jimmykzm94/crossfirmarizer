@@ -12,6 +12,12 @@ if __name__ == "__main__":
         # jumping_word(lcd, "Bello!", 0, cycles=1, interval=0.2)
         # print_hello_world(lcd)
 
+        time.sleep(1)
+        lcd.clear()
+        lcd.set_cursor(1,0)
+        lcd.write("hello")
+        time.sleep(2)
+
         # middle of the screen
         # word = "Blink!"
         # middle_col = (16 - len(word)) // 2

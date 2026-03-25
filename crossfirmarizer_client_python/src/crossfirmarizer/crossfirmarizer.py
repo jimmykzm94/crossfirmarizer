@@ -17,8 +17,8 @@ CMD_ULTRASONIC_CONFIG = 0x71
 CMD_HELLO = 0x99
 
 class SerialClient:
-    def __init__(self, port: str):
-        self.ser = serial.Serial(port, 115200, timeout=1)
+    def __init__(self, port: str, baudrate: int = 115200):
+        self.ser = serial.Serial(port, baudrate, timeout=1)
         self.pin_states = {}
         self._raw_packet_queue = queue.Queue()
         self._sync_cmd_response_queue = queue.Queue(maxsize=1)
@@ -224,6 +224,8 @@ class PinMode:
     INPUT = 0
     OUTPUT = 1
     ANALOG = 2
+    INPUT_PULLUP = 3
+    INPUT_PULLDOWN = 4
 
 # Example usage:
 if __name__ == "__main__":

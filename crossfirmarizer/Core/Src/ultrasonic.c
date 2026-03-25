@@ -29,6 +29,8 @@ static volatile float last_reading;
 
 static void ultrasonic_trigger_finished(uint32_t ignored)
 {
+    (void)ignored; // Unused in this implementation
+
     // 10us have passed, end the trigger pulse
     gpio_write(trig_pin, 0);
 

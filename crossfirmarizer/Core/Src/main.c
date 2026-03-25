@@ -210,3 +210,91 @@ int main(void)
 
 //     return 0;
 // }
+
+// #include "sam.h"
+
+// // Simple blocking delay
+// void delay_s(void)
+// {
+//     // ~8,000,000 clock cycles at 8MHz is roughly 1 second
+//     // (varies slightly based on compiler optimization)
+//     for (volatile uint32_t i = 0; i < 1000000; i++)
+//         ;
+// }
+
+// // Function to send a string over UART
+// void uart_print(const char *str)
+// {
+//     while (*str)
+//     {
+//         // Wait until the Data Register is Empty (DRE)
+//         while (!(SERCOM3_REGS->USART_INT.SERCOM_INTFLAG & SERCOM_USART_INT_INTFLAG_DRE_Msk))
+//             ;
+//         // Write the character
+//         SERCOM3_REGS->USART_INT.SERCOM_DATA = *str++;
+//     }
+// }
+
+// void system_init(void)
+// {
+//     // 1. Change clock from 1 MHz to 8 MHz by clearing the prescaler
+//     SYSCTRL_REGS->SYSCTRL_OSC8M &= ~SYSCTRL_OSC8M_PRESC_Msk;
+
+//     // 2. Enable APB clock for SERCOM3
+//     PM_REGS->PM_APBCMASK |= PM_APBCMASK_SERCOM3_Msk;
+
+//     // 3. Configure GCLK0 (8MHz) for SERCOM3
+//     GCLK_REGS->GCLK_CLKCTRL = GCLK_CLKCTRL_CLKEN_Msk |
+//                               GCLK_CLKCTRL_GEN_GCLK0 |
+//                               GCLK_CLKCTRL_ID_SERCOM3_CORE;
+//     while (GCLK_REGS->GCLK_STATUS & GCLK_STATUS_SYNCBUSY_Msk)
+//         ;
+
+//     // 4. Configure Pins PA24 (TX) and PA25 (RX) for SERCOM3
+//     // PA24/PA25 share PMUX register 12. Function C (0x2) is SERCOM.
+//     PORT_REGS->GROUP[0].PORT_PMUX[12] = PORT_PMUX_PMUXE(2) | PORT_PMUX_PMUXO(2);
+//     // Enable peripheral multiplexer for both pins
+//     PORT_REGS->GROUP[0].PORT_PINCFG[24] = PORT_PINCFG_PMUXEN_Msk;
+//     PORT_REGS->GROUP[0].PORT_PINCFG[25] = PORT_PINCFG_PMUXEN_Msk;
+
+//     // 5. Configure SERCOM3 UART
+//     // DORD=1 (LSB first), CMODE=0 (Async), RXPO=3 (PAD[3]=PA25), TXPO=1 (PAD[2]=PA24), MODE=1 (Internal Clock)
+//     SERCOM3_REGS->USART_INT.SERCOM_CTRLA = SERCOM_USART_INT_CTRLA_DORD_Msk |
+//                                            SERCOM_USART_INT_CTRLA_RXPO(3) |
+//                                            SERCOM_USART_INT_CTRLA_TXPO(1) |
+//                                            SERCOM_USART_INT_CTRLA_MODE(1);
+
+//     // Enable RX and TX
+//     SERCOM3_REGS->USART_INT.SERCOM_CTRLB = SERCOM_USART_INT_CTRLB_RXEN_Msk |
+//                                            SERCOM_USART_INT_CTRLB_TXEN_Msk;
+//     while (SERCOM3_REGS->USART_INT.SERCOM_STATUS & SERCOM_USART_INT_STATUS_SYNCBUSY_Msk)
+//         ;
+
+//     // Set Baud Rate to 115200 (calculated for 8MHz clock)
+//     SERCOM3_REGS->USART_INT.SERCOM_BAUD = 50436;
+
+//     // Enable SERCOM3
+//     SERCOM3_REGS->USART_INT.SERCOM_CTRLA |= SERCOM_USART_INT_CTRLA_ENABLE_Msk;
+//     while (SERCOM3_REGS->USART_INT.SERCOM_STATUS & SERCOM_USART_INT_STATUS_SYNCBUSY_Msk)
+//         ;
+// }
+
+// int main(void)
+// {
+//     system_init();
+
+//     while (1)
+//     {
+//         uart_print("Hello\r\n");
+//         delay_s();
+//     }
+// }
+
+
+// DEBUG
+// #include "command.h"
+// #include <stdio.h>
+// #include <string.h>
+// char msg[40];
+// sprintf(msg, "%d %d %d\n", pin, port_number, pin_number);
+// command_send(CMD_HELLO, (uint8_t *)msg, strlen(msg));

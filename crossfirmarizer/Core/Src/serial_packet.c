@@ -65,7 +65,7 @@ static size_t cobs_encode(const uint8_t *input, size_t length, uint8_t *output)
 bool parse_packet(const uint8_t *encoded_buffer, size_t encoded_len, Packet *pkt)
 {
     uint8_t decoded[64]; // Ensure this is large enough for CMD + LEN + PAYLOAD + CHK
-    size_t decoded_len = cobs_decode(encoded_buffer, encoded_len, decoded);
+    uint32_t decoded_len = cobs_decode(encoded_buffer, encoded_len, decoded);
 
     if (decoded_len < 3)
         return false; // Minimum size: CMD, LEN, CHK
@@ -73,7 +73,7 @@ bool parse_packet(const uint8_t *encoded_buffer, size_t encoded_len, Packet *pkt
     pkt->cmd = decoded[0];
     pkt->len = decoded[1];
 
-    if (decoded_len != (3 + pkt->len))
+    if (decoded_len != (uint32_t)(3 + pkt->len))
         return false; // Length mismatch
 
     uint8_t calc_chk = pkt->cmd ^ pkt->len;

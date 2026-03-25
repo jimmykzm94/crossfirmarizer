@@ -1,12 +1,8 @@
-#ifndef PINS_H
-#define PINS_H
-
-// TODO un-comment for non-stm32 or command build
-//#define TARGET_STM32F446RE
-// #define TARGET_ATMEGA2560
+#pragma once
 
 #ifdef TARGET_STM32F446RE
 
+#include "pin_mode.h"
 #include "stm32f446xx.h"
 
 typedef enum
@@ -124,15 +120,7 @@ typedef enum
 
     // size
     PIN_MAX_COUNT
-} pin_t;
-
-typedef enum
-{
-    PIN_MODE_INPUT,
-    PIN_MODE_OUTPUT,
-    PIN_MODE_ANALOG,
-    PIN_MODE_MAX_COUNT
-} pin_mode_t;
+} pin_nucleof446re_t;
 
 typedef struct
 {
@@ -141,7 +129,5 @@ typedef struct
 } pin_map_t;
 
 extern const pin_map_t pins[PIN_MAX_COUNT];
-
-#endif
 
 #endif

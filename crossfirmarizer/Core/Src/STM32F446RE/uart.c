@@ -5,7 +5,7 @@ static uint8_t rx_buffer[RX_BUFFER_SIZE];
 static int rx_buffer_head = 0;
 static int rx_buffer_tail = 0;
 
-void uart_init(void)
+void uart_init(uint32_t baudrate)
 {
     // Enable clock for GPIOA and UART2
     RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;

@@ -13,7 +13,7 @@ static volatile uint8_t tx_buffer[TX_BUFFER_SIZE];
 static volatile uint8_t tx_buffer_head = 0;
 static volatile uint8_t tx_buffer_tail = 0;
 
-void uart_init(void)
+void uart_init(uint32_t baudrate)
 {
     // Enable double speed mode
     UCSR0A |= (1 << U2X0);
