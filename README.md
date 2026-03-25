@@ -1,9 +1,11 @@
 # 🌷 CrossFirmarizer 🌷
 ![crossfirmarizer_banner.png](crossfirmarizer_banner.png)
 
-CrossFirmarizer is a lightweight, high-performance alternative to Firmata for controlling microcontrollers from a host computer—without sacrificing low-level control or portability. It exists to bridge high-level experimentation and low-level embedded control—without forcing you to choose between them.
+> ⚠️ This README is still work in progress!
 
-Unlike Firmata, it allows seamless integration of vendor HAL drivers and custom bare-metal logic without breaking the communication layer.
+CrossFirmarizer is a framework alternative to Firmata for controlling microcontrollers from a host computer, without sacrificing low-level control or portability. It exists to bridge high-level software control and low-level embedded control without forcing you to choose between them.
+
+Unlike Firmata, it allows seamless integration of vendor HAL drivers and custom bare-metal logic without breaking the firmware application layer.
 
 > **⚠️ Prototype-Focused:** CrossFirmarizer is designed for rapid development and experimentation. It is not optimized for production reliability, safety-critical systems, or long-term deployment.
 
@@ -44,53 +46,6 @@ Communication Flow:
 | Performance Focus        | ✅ Yes          | ❌ No   |
 | Language Extensible      | ✅ Yes          | ⚠️ Limited |
 
-## Installation
-
-```bash
-pip install crossfirmarizer-x.y.z-py3-none-any.whl
-```
-
-## Getting Started
-
-### 1. Flash Firmware
-Build the firmware for your target microcontroller and flash it. See the "Building from Source" section for detailed instructions.
-> STM32 users: You can use an IDE like STM32CubeIDE (see build instructions below) for a simpler, integrated setup.
-
-### 2. Run Example
-The following example shows how to blink the built-in LED.
-
-**Choose your client:**
-- `SerialClient` → For STM32 and other generic boards.
-- `ArduinoClient` → For ATmega boards (e.g., Arduino Mega), as it handles the auto-reset delay.
-
-```python
-# Use the client and target appropriate for your board
-from crossfirmarizer import SerialClient, PinMode # or ArduinoClient
-from crossfirmarizer.targets import STM32F446RE # or ATmega2560
-import time
-
-if __name__ == "__main__":
-    # macOS/Linux: /dev/tty.* | Windows: COMx
-    client = SerialClient('/dev/tty.usbmodemXXXX') # or ArduinoClient
-    
-    # Set LED pin to OUTPUT mode
-    client.set_gpio(STM32F446RE.LED, PinMode.OUTPUT)
-    
-    # Blink the LED
-    try:
-        while True:
-            client.digital_write(STM32F446RE.LED, 1)
-            time.sleep(0.5)
-            client.digital_write(STM32F446RE.LED, 0)
-            time.sleep(0.5)
-    except KeyboardInterrupt:
-        pass
-    finally:
-        print("Cleaning up and closing client.")
-        client.digital_write(STM32F446RE.LED, 0)
-        client.close()
-```
-
 ## Serial Communication
 
 ### Physical Layer
@@ -111,6 +66,28 @@ Each raw message packet has the structure: `[CMD][LEN][PAYLOAD][CHECKSUM]`
 To ensure data integrity and handle `0x00` bytes within the payload, this raw packet is encoded using **Consistent Overhead Byte Stuffing (COBS)**. A final `0x00` byte is then appended as a frame delimiter.
 
 The final transmitted message is: `[COBS-ENCODED-PACKET][0x00]`
+
+## Getting Started
+
+### 1. Flash Firmware
+Build the firmware for your target microcontroller and flash it. See the "Building from Source" section for detailed instructions.
+
+### 2. Run Example
+
+### Python Client
+The examples can be found from `crossfirmarizer_client_python/examples`.
+
+**Installation**
+```bash
+pip install crossfirmarizer-x.y.z-py3-none-any.whl
+```
+
+**Choose your client:**
+- `SerialClient` → For STM32 and other generic boards.
+- `ArduinoClient` → For ATmega boards (e.g., Arduino Mega), as it handles the auto-reset delay.
+
+**⚠️ Notes:**
+Reset the board to re-initialize the pins.
 
 ## Building from Source
 
@@ -137,7 +114,10 @@ make -f crossfirmarizer/crossfirmarizer_ATmega2560.mk upload PORT=/dev/your_port
 ### STM32F446RE Firmware
 
 **Using Makefile:**
-1. Build: `make -f crossfirmarizer/crossfirmarizer_STM32F446xx.mk all`
+1. Build:
+```
+make -f crossfirmarizer/crossfirmarizer_STM32F446xx.mk all
+```
 2. Flash with a tool like `st-flash`:
 ```bash
 st-flash --format hex write crossfirmarizer_STM32F446RE.hex
@@ -147,6 +127,13 @@ st-flash --format hex write crossfirmarizer_STM32F446RE.hex
 1. Create a new project from existing C code, pointing to the `crossfirmarizer` directory.
 2. Configure the toolchain (`arm-none-eabi-gcc`) and build settings.
 3. Build and flash directly from the IDE.
+
+### ATSAMD20J18 Firmware
+**Using Makefile:**
+1. Build and upload:
+```
+make -f crossfirmarizer/crossfirmarizer_crossfirmarizer_ATSAMD20J18.mk all upload
+```
 
 ## For Developers
 
@@ -158,7 +145,7 @@ Adding a new MCU typically involves two steps:
 **Step 1: Define Pins**
 Create a `pins.h` for your target MCU in a new folder under `crossfirmarizer/Core/Inc/`.
 This file must define:
-- A `pin_t` enum listing all available pins and helpers (e.g., `PIN_LED`).
+- A `pin_xxx_t` enum listing all available pins and helpers (e.g., `PIN_LED`), where xxx is the MCU name.
 - A `pin_map_t` struct to map the logical pins to their physical hardware registers/ports.
 
 **Step 2: Implement HAL**
