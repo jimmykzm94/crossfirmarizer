@@ -159,3 +159,27 @@ In the client library, define the pin mappings for the new hardware. For the Pyt
 ## CI / Release Pipeline
 
 This project uses CircleCI for continuous integration, defined in `.circleci/config.yml`. When a new version is pushed to a `release/*` branch, the pipeline automatically builds the Python client, compiles the firmware for all targets, and attaches the artifacts to a new GitHub Release.
+
+## Software Testing
+
+This project uses the Python `behave` framework to implement Behavior-Driven Development (BDD) testing. The test suite validates system behavior using simulated environments instead of physical hardware.
+
+### Test Coverage
+* **LED Control:** Verifies correct LED state changes based on system behavior.
+* **Button Input:** Tests button state handling and interaction logic using simulated input.
+* **Serial Communication:** Validates serial packet encoding and decoding, including cross-language compatibility.
+
+### Test Approach
+* Hardware interactions are simulated using mocked HAL drivers (e.g., GPIO).
+* Fully controlled I/O state enables deterministic and repeatable tests.
+* No physical hardware is required.
+
+### Running the Tests
+
+```bash
+# Run tests directly with behave
+behave .
+
+# Alternatively, run via make
+make -f crossfirmarizer_test.mk test
+```

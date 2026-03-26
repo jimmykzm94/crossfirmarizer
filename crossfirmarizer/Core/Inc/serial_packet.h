@@ -7,6 +7,7 @@
 #define MAX_PAYLOAD 32
 #define FRAME_DELIMITER 0x00
 
+// FIXME remove checksum from future because app dont need it
 typedef struct
 {
     uint8_t cmd;
